@@ -1,7 +1,9 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 
 namespace ConsoleMagazzino
 {
@@ -348,88 +350,88 @@ namespace ConsoleMagazzino
 
 			OracleTransaction transaction = null;
 
-			float qta = 0;
-			float dimensioniSingProd = 0;
-			float dimensioniTotProd = 0;
+			//float qta = 0;
+			//float dimensioniSingProd = 0;
+			//float dimensioniTotProd = 0;
 
 			try
 			{
 				transaction = conn.BeginTransaction();
-
-				// ricavo le info del prodotto 
-				var commandText0 = "SELECT QTA, DIMENSIONI_MQ, DIMENSIONI_MQ_TOT FROM PRODOTTI WHERE NOME_PRODOTTO = :nomeProdotto";
-
-				using (var command = new OracleCommand(commandText0, conn))
-				{
-					command.Parameters.Add(new OracleParameter("nomeProdotto", nomeProdotto));
-
-					using (var reader = command.ExecuteReader())
-					{
-						if (reader.HasRows)
-						{
-							while (reader.Read())
-							{
-								qta = reader.GetFloat(reader.GetOrdinal("QTA"));
-								dimensioniSingProd = reader.GetFloat(reader.GetOrdinal("DIMENSIONI_MQ"));
-								dimensioniTotProd = reader.GetFloat(reader.GetOrdinal("DIMENSIONI_MQ_TOT"));
-							}
-
-							Console.WriteLine("Prodotto correttamente individuato.");
-						}
-						else
-						{
-							triplettaErrori.PopolateV1(true);
-							triplettaErrori.PopolateV2(false);
-							triplettaErrori.PopolateV3(false);
-							throw new Exception("impossibile trovare il prodotto specificato.");
-						}
-					}
-				}
 
 				if (float.IsNaN(quantitaDaEliminare) || float.IsInfinity(quantitaDaEliminare))
 				{
 					throw new Exception("Valore non valido per la quantità da eliminare.");
 				}
 
-				//using (var command = new OracleCommand("UPDATE_PRODOTTO", conn))
-				//{
-				//	command.CommandType = CommandType.StoredProcedure;
-				//	command.Parameters.Add(new OracleParameter("nomeProdotto_param", OracleDbType.Varchar2)).Value = nomeProdotto;
-				//	command.Parameters.Add(new OracleParameter("qtaDaEliminare_param", OracleDbType.Decimal)).Value = quantitaDaEliminare;
-				//	//command.Parameters.Add(new OracleParameter("qtaDaEliminare2", OracleDbType.Decimal) { Value = (decimal)quantitaDaEliminare });
+				int righeAggiornate = 0;
+				int differenzaMetriQuadri = 0;
 
-				//	var righeAggiornateParam = new OracleParameter("righeAggiornate", OracleDbType.Int32)
-				//	{
-				//		Direction = ParameterDirection.Output
-				//	};
-				//	command.Parameters.Add(righeAggiornateParam);
+				using (var command = new OracleCommand("UPDATE_PRODOTTO", conn))
+				{
+					command.CommandType = CommandType.StoredProcedure;
 
-				//	// Log dei valori dei parametri
-				//	//Console.WriteLine($"nomeProdotto: {nomeProdotto}");
-				//	//Console.WriteLine($"qtaDaEliminare1: {quantitaDaEliminare}, Tipo: {quantitaDaEliminare.GetType()}, Valore: {quantitaDaEliminare}");
-				//	//Console.WriteLine($"qtaDaEliminare2: {quantitaDaEliminare}, Tipo: {quantitaDaEliminare.GetType()}, Valore: {quantitaDaEliminare}");
+					// aggiungi parametri di input
+					command.Parameters.Add(new OracleParameter("nomeProdotto_param", OracleDbType.Varchar2)).Value = nomeProdotto;
+					command.Parameters.Add(new OracleParameter("qtaDaEliminare_param", OracleDbType.Decimal)).Value = quantitaDaEliminare;
 
-				//	command.ExecuteNonQuery();
+					// definisci i parametri di output
+					var righeAggiornate_Param = new OracleParameter("righeAggiornate", OracleDbType.Int32)
+					{
+						Direction = ParameterDirection.Output
+					};
 
-				//	// Recupera il valore del parametro di output
-				//	int righeAggiornate = Convert.ToInt32(righeAggiornateParam.Value);
+					var differenzaMetriQuadri_Param = new OracleParameter("differenzaMetriQuadri", OracleDbType.Int32)
+					{
+						Direction = ParameterDirection.Output
+					};
+					command.Parameters.Add(righeAggiornate_Param);
+					command.Parameters.Add(differenzaMetriQuadri_Param);
 
-				//	if (righeAggiornate > 0)
-				//	{
-				//		Console.WriteLine($"Procedura eseguita con successo. Numero di righe aggiornate: {righeAggiornate}");
-				//	}
-				//	else
-				//	{
-				//		Console.WriteLine("Nessuna riga modificata. Verifica i parametri della procedura.");
-				//	}
+					// esegui la store procedure
+					command.ExecuteNonQuery();
 
-				//	Console.WriteLine("prodotto correttamente modificato.");
-				//}
+					// Recupera i valori dei parametri di output
+					//int righeAggiornate = 0;
+					//int differenzaMetriQuadri = 0;
+
+					if (righeAggiornate_Param.Value != DBNull.Value && differenzaMetriQuadri_Param.Value != DBNull.Value)
+					{
+						var oracleDecimalValue = (OracleDecimal)righeAggiornate_Param.Value;
+						righeAggiornate = Convert.ToInt32(oracleDecimalValue.Value);
+
+						var oracleDecimalValue2 = (OracleDecimal)differenzaMetriQuadri_Param.Value;
+						differenzaMetriQuadri = Convert.ToInt32(oracleDecimalValue2.Value);
+					}
 
 
+					if (righeAggiornate == 1)
+					{
+						Console.WriteLine($"Procedura eseguita con successo. Numero di righe aggiornate: {righeAggiornate}");
+					}
+					else if (righeAggiornate == 2)
+					{
+						Console.WriteLine("Procedura eseguita con successo.");
+						Console.WriteLine("hai rimosso interamente il prodotto dal magazzino.");
+					}
+					else
+					{
+						Console.WriteLine("Nessuna riga modificata. Verifica i parametri della procedura.");
+					}
+
+					Console.WriteLine("Prodotto correttamente modificato.");
+				}
+
+
+				if (differenzaMetriQuadri == 0)
+				{
+					throw new Exception("errore nel calcolo dei metri quadrati da restituire al magazzino.");
+				};
+
+
+				float spazioDaRestituire = (float)differenzaMetriQuadri;
 
 				// aggiorno lo spazio presente nel magazzino
-				bool esito = AggiornaCapienzaMagazzino(conn, dimensioniTotProd, nomeMagazzino, '+');
+				bool esito = AggiornaCapienzaMagazzino(conn, spazioDaRestituire, nomeMagazzino, '+');
 
 				if (esito)
 				{
