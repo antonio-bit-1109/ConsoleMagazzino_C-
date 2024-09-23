@@ -21,6 +21,14 @@ namespace ConsoleMagazzino
         public InvioEmail()
         {
             PswMitt = Environment.GetEnvironmentVariable("PASSWORD_EMAIL_CONSOLE_APP");
+            if (string.IsNullOrEmpty(PswMitt))
+            {
+                throw new ArgumentNullException("Impossibile recuperare password dalle varibili d'ambiente.");
+            }
+            else
+            {
+                Console.WriteLine("Password recuperata con successo.");
+            }
         }
 
         public void SendEmail_classEmail (string destinatario , string oggettoEMail , string testoEMail)
@@ -38,6 +46,7 @@ namespace ConsoleMagazzino
             {
                 var fromAddress = new MailAddress(Mittente);
                 var toAddress = new MailAddress(Destinatario);
+                //string fromPassword = PswMitt;    
                 string fromPassword = PswMitt;
                 const string smtpServer = "smtp.gmail.com";
                 const int smtpPort = 587;
