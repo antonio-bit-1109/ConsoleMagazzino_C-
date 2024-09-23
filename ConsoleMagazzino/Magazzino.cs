@@ -249,9 +249,6 @@ namespace ConsoleMagazzino
 					ProdottiImmagazzinati.Remove(nomeProdotto_To_Store);
 					nomeProdotto_To_Store = null;
 					qta_prodotto_to_store = 0;
-					Console.WriteLine("--------------------------------------------");
-					Console.WriteLine("Prodotto aggiunto con successo al magazzino.");
-					Console.WriteLine("--------------------------------------------");
 					Thread.Sleep(2000);
 					break;
 

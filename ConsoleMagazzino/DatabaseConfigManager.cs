@@ -83,10 +83,13 @@ namespace ConsoleMagazzino
 		{
 			var (result, conn) = OpenConnectionDb();
 
+			var transaction = conn.BeginTransaction();
+
+
 			try
 			{
 
-				if (conn == null)
+                if (conn == null)
 				{
 					throw new Exception("impossibile stabile connessione al db. connessione null.");
 				}
@@ -95,21 +98,78 @@ namespace ConsoleMagazzino
 				{
 					foreach (var prodotto in ProdottoDictionary)
 					{
-						var commandText = $" INSERT INTO PRODOTTI (NOME_PRODOTTO , QTA , DIMENSIONI_MQ ,DIMENSIONI_MQ_TOT ) " +
-						$"VALUES (:nomeProdotto , :quantita , :dimensione_singoloProd , :dimensione_totProd)";
+						//var commandText = $" INSERT INTO PRODOTTI (NOME_PRODOTTO , QTA , DIMENSIONI_MQ ,DIMENSIONI_MQ_TOT ) " +
+						//$"VALUES (:nomeProdotto , :quantita , :dimensione_singoloProd , :dimensione_totProd)";
 
-						using (var command = new OracleCommand(commandText, conn))
+						// check se il magazzino non sia gia pieno o che il prodotto che si vuole inserire superi la capacita del magazzino.
+						using (var command = new OracleCommand("CHECK_CAPIENZA_MAGAZZINO", conn))
 						{
-							command.Parameters.Add(new OracleParameter("nomeProdotto", prodotto.Key));
+							command.CommandType = CommandType.StoredProcedure;
+                            //parametri input
+							command.Parameters.Add(new OracleParameter("nomeMagazzino", nomeMagazzino));
+
+                            //parametro output
+							var capienzaResidua_Param = new OracleParameter("capienzaResidua", OracleDbType.Decimal)
+                            {
+                                Direction = ParameterDirection.Output
+                            };
+							command.Parameters.Add(capienzaResidua_Param);
+                            command.ExecuteNonQuery();
+
+							if (capienzaResidua_Param.Value != DBNull.Value)
+							{
+								var oracleValue = (OracleDecimal)capienzaResidua_Param.Value;
+                                float capienzaResidua = Convert.ToSingle(oracleValue.Value);
+
+								if (capienzaResidua < dimensioniTotProdotto)
+								{
+									throw new Exception("impossibile inserire il prodotto. Capienza magazzino insufficiente.");
+                                }
+                            }
+                        }
+
+                        using (var command = new OracleCommand("INSERT_INTO_DB_PRODOTTO", conn))
+						{
+							command.CommandType = CommandType.StoredProcedure;	
+
+							//parametri di input 
+                            command.Parameters.Add(new OracleParameter("nomeProdotto", prodotto.Key));
 							command.Parameters.Add(new OracleParameter("quantita", prodotto.Value));
 							command.Parameters.Add(new OracleParameter("dimensione", dimensioniProdotto));
 							command.Parameters.Add(new OracleParameter("dimensione_totProd", dimensioniTotProdotto));
-							command.ExecuteNonQuery();
 
-						}
+							//parametro di output della store procedure 
+							var righeAggiornate_Param = new OracleParameter("righeAggiornate", OracleDbType.Int32)
+                            {
+                                Direction = ParameterDirection.Output
+                            };
+							command.Parameters.Add(righeAggiornate_Param);
+                            command.ExecuteNonQuery();
+
+
+							if (righeAggiornate_Param.Value != DBNull.Value)
+							{
+								var oracleValue = (OracleDecimal)righeAggiornate_Param.Value;
+                                int righeAggiornate = Convert.ToInt32(oracleValue.Value);
+
+                                if ( righeAggiornate != 1 ) 
+								{
+									throw new Exception("Errore durante l'insert del prodotto nel database.");
+                                }
+                              
+                            } 
+
+							
+
+                        }
 					}
 					AggiornaCapienzaMagazzino(conn, dimensioniTotProdotto, nomeMagazzino, '-');
-					return true;
+                    Console.WriteLine("--------------------------------------------");
+                    Console.WriteLine("Prodotto aggiunto con successo al magazzino.");
+                    Console.WriteLine("--------------------------------------------");
+
+                    transaction.Commit();
+                    return true;
 				}
 				else
 				{
@@ -118,7 +178,8 @@ namespace ConsoleMagazzino
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"errore durante l'insert nel database: {ex.Message}");
+                transaction?.Rollback();
+                Console.WriteLine($"errore durante l'insert nel database: {ex.Message}");
 				return false;
 			}
 			finally
