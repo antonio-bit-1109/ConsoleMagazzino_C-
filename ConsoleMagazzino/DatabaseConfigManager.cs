@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Threading;
+
 
 namespace ConsoleMagazzino
 {
@@ -11,12 +13,19 @@ namespace ConsoleMagazzino
 	{
 		//proprietà della classe
 		private readonly string _connectionString;
+		private Timer _timer;
 
 		// costruttore
 		public DatabaseConfigManager()
 		{
 			_connectionString = ConfigurationManager.ConnectionStrings["OracleDbContext"].ConnectionString;
-		}
+            _timer = new Timer(NotificaCApienzaCallBack, null, 0, 10000);
+        }
+
+		private void NotificaCApienzaCallBack (object state)
+		{
+			NotificaCapienza();
+        }
 
 		private string GetConnectionString()
 		{
@@ -549,6 +558,51 @@ namespace ConsoleMagazzino
 			}
 		}
 
+        public async void NotificaCapienza()
+        {
+            var (result, conn) = OpenConnectionDb();
+            var transaction = conn.BeginTransaction();
+            try
+            {
+                using (var command = new OracleCommand("NOTIFICA_CAPIENZA", conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
 
+                    //parametri di output
+                    var capienzaMagazzino_param = new OracleParameter("capienzaMagazzino", OracleDbType.Decimal)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    command.Parameters.Add(capienzaMagazzino_param);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    if (capienzaMagazzino_param.Value != DBNull.Value)
+                    {
+                        var oracleCapienzaValue = (OracleDecimal)capienzaMagazzino_param.Value;
+                        float capienzaResiduaMagazzino = Convert.ToSingle(oracleCapienzaValue.Value);
+						Console.WriteLine("                                                         "); 
+						Console.WriteLine("--------------MESSAGGIO AUTOMATICO ------------");
+						Console.WriteLine("---------------------------------------------------");
+                        Console.WriteLine($"Capienza residua del magazzino: {capienzaResiduaMagazzino} mq");
+                        Console.WriteLine("---------------------------------------------------");
+                      
+                    }
+                }
+
+                transaction.Commit();
+                
+            }
+            catch (Exception ex)
+            {
+                transaction?.Rollback();
+                Console.WriteLine($"Errore durante il controllo capienza Magazzino. Errore: {ex.Message}");
+                
+            }
+            finally
+            {
+                ClosingConnection(conn);
+            }
+        }
 	}
 }
