@@ -19,7 +19,7 @@ namespace ConsoleMagazzino
 		public DatabaseConfigManager()
 		{
 			_connectionString = ConfigurationManager.ConnectionStrings["OracleDbContext"].ConnectionString;
-            _timer = new Timer(NotificaCApienzaCallBack, null, 0, 10000);
+            _timer = new Timer(NotificaCApienzaCallBack, null, 0, 100000);
         }
 
 		private void NotificaCApienzaCallBack (object state)
@@ -582,10 +582,10 @@ namespace ConsoleMagazzino
                         var oracleCapienzaValue = (OracleDecimal)capienzaMagazzino_param.Value;
                         float capienzaResiduaMagazzino = Convert.ToSingle(oracleCapienzaValue.Value);
 						Console.WriteLine("                                                         "); 
-						Console.WriteLine("--------------MESSAGGIO AUTOMATICO ------------");
-						Console.WriteLine("---------------------------------------------------");
-                        Console.WriteLine($"Capienza residua del magazzino: {capienzaResiduaMagazzino} mq");
-                        Console.WriteLine("---------------------------------------------------");
+						Console.WriteLine("                                                --------------MESSAGGIO AUTOMATICO ------------");
+						Console.WriteLine("                                                ---------------------------------------------------");
+                        Console.WriteLine($"                                               Capienza residua del magazzino: {capienzaResiduaMagazzino} mq");
+                        Console.WriteLine("                                                ---------------------------------------------------");
                       
                     }
                 }

@@ -89,6 +89,8 @@
   <ItemGroup>
     <Compile Include="DatabaseConfigManager.cs" />
     <Compile Include="IDatabaseConfigManager_Interface.cs" />
+    <Compile Include="IEmail_Interface.cs" />
+    <Compile Include="InvioEmail.cs" />
     <Compile Include="IOC_Config.cs" />
     <Compile Include="Magazzino.cs" />
     <Compile Include="Prodotto.cs" />

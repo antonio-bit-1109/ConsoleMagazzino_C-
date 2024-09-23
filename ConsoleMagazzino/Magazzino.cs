@@ -30,6 +30,8 @@ namespace ConsoleMagazzino
 		//private static DatabaseConfigManager _DbConfigManager = new DatabaseConfigManager();
 		private static IDatabaseConfigManager_Interface _dbConfigManager;
 
+		private static IEmail_Interface _sendEmail;
+
 		// inizializzo un costruttore statico per fare dependency injection, in pratica sto fornendo alla proprietà _dbConfigManager
 		// l'astrazione della classe DatabaseConfigManager
 		// ora, tramite la proprietà _dbConfigManager ho acesso a metodi e proprietà della classe DatabaseConfigManager
@@ -37,6 +39,7 @@ namespace ConsoleMagazzino
 		{
 			var serviceProvider = IOC_Config.Configure();
 			_dbConfigManager = serviceProvider.GetService<IDatabaseConfigManager_Interface>();
+			_sendEmail = serviceProvider.GetService<IEmail_Interface>();
 		}
 
 		public static void Welcome()
@@ -56,9 +59,10 @@ namespace ConsoleMagazzino
 			Console.WriteLine("2- Aggiungi un acquisto da un fornitore");
 			Console.WriteLine("3- Scarica il magazzino di una quantità di prodotto");
 			Console.WriteLine("4- Controlla capienza magazzino");
-			Console.WriteLine("5- Esci");
+			Console.WriteLine("5- Invia una email");
+			Console.WriteLine("6- Esci");
 			Console.WriteLine("------------------------------------------------------");
-			Console.WriteLine("Scegli un opzione tra 1 , 2 , 3 , 4 e 5");
+			Console.WriteLine("Scegli un opzione tra 1 , 2 , 3 , 4 , 5 e 6");
 			var choise = Console.ReadLine();
 			ChoiseProp = choise;
 		}
@@ -68,7 +72,7 @@ namespace ConsoleMagazzino
 			if (int.TryParse(ChoiseProp, out int numero))
 			{
 
-				if (numero == 1 || numero == 2 || numero == 3 || numero == 4 || numero == 5)
+				if (numero == 1 || numero == 2 || numero == 3 || numero == 4 || numero == 5 || numero == 6)
 				{
 					SceltaUtente = numero;
 					InputValido = true;
@@ -333,5 +337,65 @@ namespace ConsoleMagazzino
 			return newValue;
 		}
 
+		public static void InviaEmailDalMagazzino()
+		{
+			bool check0 = false;
+			bool check1 = false;
+			bool check2 = false;
+			string email;
+			string oggetto;
+            string testo;
+
+            do
+			{
+				Console.WriteLine("inserisci l'email del destinatario");
+				 email = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    Console.WriteLine("campo email non valido.");
+					continue;
+                }
+                else
+                {
+                    check0 = true;
+                }
+            } while (!check0);
+
+
+            do
+            {
+                Console.WriteLine("inserisci l'oggetto della mail");
+                oggetto = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(oggetto))
+                {
+                    Console.WriteLine("campo oggetto non valido.");
+                    continue;
+                }
+                else
+                {
+                    check1 = true;
+                }
+            } while (!check1);
+
+            do
+            {
+                Console.WriteLine("inserisci i testo della mail");
+                testo = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(testo))
+                {
+                    Console.WriteLine("campo testo non valido.");
+                    continue;
+                }
+                else
+                {
+                    check2 = true;
+                }
+            } while (!check2);
+
+            _sendEmail.SendEmail_classEmail(email, oggetto, testo);
+		}
 	}
 }

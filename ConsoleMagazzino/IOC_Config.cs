@@ -21,7 +21,8 @@ namespace ConsoleMagazzino
 			//In altre parole, verrà creata una singola istanza di DatabaseConfigManager
 			//e questa stessa istanza verrà utilizzata ogni volta che viene richiesta un'istanza di IDatabaseConfigManager_Interface.
 			serviceProvider.AddSingleton<IDatabaseConfigManager_Interface, DatabaseConfigManager>();
-			return serviceProvider.BuildServiceProvider();
+            serviceProvider.AddSingleton<IEmail_Interface, InvioEmail>();
+            return serviceProvider.BuildServiceProvider();
 		}
 	}
 }

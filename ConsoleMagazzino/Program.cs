@@ -44,9 +44,14 @@
 						Magazzino.settingSceltaUtente();
 						break;
 					case 5:
-						exit = true;
+                        Magazzino.InviaEmailDalMagazzino();
+                        Magazzino.SelectAction();
+                        Magazzino.settingSceltaUtente();
 						break;
-				}
+					case 6:
+                        exit = true;
+                        break;
+                }
 			} while (!exit);
 
 			Magazzino.Esci();
