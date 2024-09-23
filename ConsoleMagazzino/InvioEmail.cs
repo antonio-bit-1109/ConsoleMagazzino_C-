@@ -13,7 +13,7 @@ namespace ConsoleMagazzino
     {
         private string Destinatario { get; set; }
         private string Mittente { get; set; } = "antoniorizzuti767@gmail.com";
-        private string PswMitt { get; set; }
+        private string PswMitt { get; set; } = "";
         private string OggettoEmail { get; set; }
         private string TestoEmail { get; set; }
 
@@ -21,13 +21,10 @@ namespace ConsoleMagazzino
         public InvioEmail()
         {
             PswMitt = Environment.GetEnvironmentVariable("PASSWORD_EMAIL_CONSOLE_APP");
-            if (string.IsNullOrEmpty(PswMitt))
+
+            if (PswMitt == "")
             {
-                throw new ArgumentNullException("Impossibile recuperare password dalle varibili d'ambiente.");
-            }
-            else
-            {
-                Console.WriteLine("Password recuperata con successo.");
+                throw new Exception("Impossibile recuperare password dalle varibili d'ambiente.");
             }
         }
 
@@ -71,7 +68,7 @@ namespace ConsoleMagazzino
                 }
                 Console.WriteLine("  ---   ----   ----   ---- ");
                 Console.WriteLine("Email inviata con successo.");
-                Console.WriteLine("  ---   ----   ----   ---- ");
+                Console.WriteLine("---   ---  ----  ----  --- ");
 
             }
             catch (Exception ex) 
