@@ -204,15 +204,36 @@ namespace ConsoleMagazzino
 					Console.WriteLine($"tentativo inizializzazione magazzino : {nomeMagazzino}");
 					Console.WriteLine("----------------------------------------------------------");
 
-					var commandText = $" INSERT INTO MAGAZZINO (NOME_MAGAZZINO , CAPIENZA ) " +
-									$"VALUES (:nomeMagazzino , :capienza )";
-					using (var command = new OracleCommand(commandText, conn))
+					//var commandText = $" INSERT INTO MAGAZZINO (NOME_MAGAZZINO , CAPIENZA ) " +
+					//				$"VALUES (:nomeMagazzino , :capienza )";
+					using (var command = new OracleCommand("INIZIALIZZAZIONE_MAGAZZINO", conn))
 					{
-						command.Parameters.Add(new OracleParameter("nomeMagazzino", nomeMagazzino));
+						// PARAMETRI INPUT 
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new OracleParameter("nomeMagazzino", nomeMagazzino));
 						command.Parameters.Add(new OracleParameter("capienza", capienzaIniziale));
-						command.ExecuteNonQuery();
 
-					}
+                        //parametro di output
+                        var rigaInserita_Param = new OracleParameter("rigaInserita", OracleDbType.Int32)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        command.Parameters.Add(rigaInserita_Param);
+						
+                        command.ExecuteNonQuery();
+
+						if (rigaInserita_Param.Value != DBNull.Value)
+                        {
+                            var oracleValue = (OracleDecimal)rigaInserita_Param.Value;
+                            int rigaInserita = Convert.ToInt32(oracleValue.Value);
+
+                            if (rigaInserita != 1)
+                            {
+                                throw new Exception("Errore durante l'inserimento del record nel database.");
+                            }
+                        }
+
+                    }
 
 					Console.WriteLine("----------------------------------------------------------");
 					Console.WriteLine($"inizializzazione magazzino : {nomeMagazzino} avvenuta con successo.");
