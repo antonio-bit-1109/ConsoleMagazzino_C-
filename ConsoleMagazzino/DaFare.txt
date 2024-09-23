@@ -1,0 +1,4 @@
+-- nell app console, quando si clicca sul rimuovi prodotto dal db (tasto 3), 
+mostra prima di tutto l'elenco sotto forma di stringhe dei prodotti salvati 
+, utilizza una store procedure per selezionare tutti i nomi dei prodotti da mostrare , 
+crea un metodo apposito. 
