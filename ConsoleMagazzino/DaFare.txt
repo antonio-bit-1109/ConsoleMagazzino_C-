@@ -1,4 +1,9 @@
--- nell app console, quando si clicca sul rimuovi prodotto dal db (tasto 3), 
+DONE -- nell app console, quando si clicca sul rimuovi prodotto dal db (tasto 3), 
 mostra prima di tutto l'elenco sotto forma di stringhe dei prodotti salvati 
 , utilizza una store procedure per selezionare tutti i nomi dei prodotti da mostrare , 
-crea un metodo apposito. 
+crea un metodo apposito.
+
+
+-- crare una tabella sul db nel quale immagazzinare le mail inviate con successo
+ed il numero di volte a cui si è inviata una mail con successo.
+controllo prima se email gia presente nella tabella , se si incremento il contatore, altrimenti la inserisco

@@ -9,5 +9,6 @@ namespace ConsoleMagazzino
     internal interface IEmail_Interface
     {
         void SendEmail_classEmail(string destinatario, string oggettoEMail, string testoEMail);
+        void CheckIndirizziEmailSent();
     }
 }

@@ -51,6 +51,10 @@
 					case 6:
                         exit = true;
                         break;
+					case 7: Magazzino.ControllaEMailInviate();
+                        Magazzino.SelectAction();
+                        Magazzino.settingSceltaUtente();
+                        break;
                 }
 			} while (!exit);
 

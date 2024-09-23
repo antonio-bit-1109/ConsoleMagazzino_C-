@@ -17,6 +17,9 @@ namespace ConsoleMagazzino
         private string OggettoEmail { get; set; }
         private string TestoEmail { get; set; }
 
+        // indirizzi a cui in precedenza è stata mandata un email con successo.
+        private List<string> Indirizzi = new List<string>();
+
 
         public InvioEmail()
         {
@@ -69,12 +72,41 @@ namespace ConsoleMagazzino
                 Console.WriteLine("  ---   ----   ----   ---- ");
                 Console.WriteLine("Email inviata con successo.");
                 Console.WriteLine("---   ---  ----  ----  --- ");
+                Indirizzi.Add(destinatario);
 
             }
             catch (Exception ex) 
             {
                 Console.WriteLine($"Errore nell'invio della mail: {ex.Message}");
             }
+        }
+
+        // metodo per controllare a quali indirizzi si è inviato con successo una mail.
+        public void CheckIndirizziEmailSent()
+        {
+           try
+           {
+                if (Indirizzi.Count <= 0)
+                {
+                    throw new Exception("Non ci sono indirizzi a cui è stata inviata con successo una email.");
+                }
+
+                Console.WriteLine("Indirizzi a cui è stata inviata una mail con successo: ");
+
+                Console.WriteLine("  ---   ----   ----   ---- ");
+                foreach(var indirizzo in Indirizzi)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine(indirizzo);
+                    Console.ResetColor();
+                }
+                    Console.WriteLine("---   ---  ----  ----  --- ");
+                
+
+           } catch (Exception ex)
+           {
+                Console.WriteLine($"Errore nel controllo degli indirizzi a cui è stata inviata una mail con successo: {ex.Message}");
+           }
         }
     }
 }

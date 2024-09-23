@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ConsoleMagazzino
@@ -61,8 +62,9 @@ namespace ConsoleMagazzino
 			Console.WriteLine("4- Controlla capienza magazzino");
 			Console.WriteLine("5- Invia una email");
 			Console.WriteLine("6- Esci");
+			Console.WriteLine("7- Controlla email inviate con successo.");
 			Console.WriteLine("------------------------------------------------------");
-			Console.WriteLine("Scegli un opzione tra 1 , 2 , 3 , 4 , 5 e 6");
+			Console.WriteLine("Scegli un opzione tra 1 , 2 , 3 , 4 , 5 , 6 , 7");
 			var choise = Console.ReadLine();
 			ChoiseProp = choise;
 		}
@@ -72,7 +74,7 @@ namespace ConsoleMagazzino
 			if (int.TryParse(ChoiseProp, out int numero))
 			{
 
-				if (numero == 1 || numero == 2 || numero == 3 || numero == 4 || numero == 5 || numero == 6)
+				if (numero == 1 || numero == 2 || numero == 3 || numero == 4 || numero == 5 || numero == 6 || numero == 7)
 				{
 					SceltaUtente = numero;
 					InputValido = true;
@@ -267,7 +269,24 @@ namespace ConsoleMagazzino
 
 		public static void RimuoviProdottoMagazzino()
 		{
-			Console.WriteLine("--------------------------------------------");
+
+			var (listaProdotti ,esito) =_dbConfigManager.GetTuttiProdottiDalMagazzino();
+
+			if (listaProdotti.Count > 0 && esito)
+			{
+				Console.WriteLine("--------------------------------------------");
+                Console.WriteLine("PRODOTTI IMMAGAZZINATI:");
+				foreach (var prodotto in listaProdotti)
+				{
+					Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Nome Prodotto : {prodotto.NomeProdotto} -  Quantità immagazzinata: {prodotto.QtaProdotto}" +
+						$" - Singolo spazio occupato: {prodotto.DimensSingoloProd}  - Totale spazio occupato: {prodotto.DimensTotProdotto}");
+					Console.ResetColor();
+				}
+                Console.WriteLine("--------------------------------------------");
+            }
+
+            Console.WriteLine("--------------------------------------------");
 			Console.WriteLine("inserisci il nome del prodotto che vuoi eliminare");
 			Console.WriteLine("--------------------------------------------");
 			string nomeProdotto = Console.ReadLine();
@@ -397,5 +416,10 @@ namespace ConsoleMagazzino
 
             _sendEmail.SendEmail_classEmail(email, oggetto, testo);
 		}
+
+		public static void ControllaEMailInviate()
+		{
+			_sendEmail.CheckIndirizziEmailSent();
+        }
 	}
 }

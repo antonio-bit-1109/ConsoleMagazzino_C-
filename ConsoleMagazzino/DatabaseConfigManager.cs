@@ -88,6 +88,8 @@ namespace ConsoleMagazzino
 			}
 		}
 
+		
+
 		public bool InsertRecordintoDb(Dictionary<string, float> ProdottoDictionary, float dimensioniProdotto, float dimensioniTotProdotto, string nomeMagazzino)
 		{
 			var (result, conn) = OpenConnectionDb();
@@ -434,7 +436,9 @@ namespace ConsoleMagazzino
 
 			var (result, conn) = OpenConnectionDb();
 
-			if (!result || conn == null)
+			//var (prodottilist , esito) = GetTuttiProdottiDalMagazzino();
+
+            if (!result || conn == null)
 			{
 				throw new Exception("Impossibile stabilire una connessione al database.");
 			}
